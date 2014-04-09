@@ -30,13 +30,13 @@ read_correction_details.txt: norm_by_align.fasta.keepalign $(SEQ_FILE)
 	../compare.py mutation_details.txt $(SEQ_FILE) norm_by_align.fasta.keepalign > read_correction_details.txt
 
 genome.ht: genome.fasta
-	python $(KHMER)/scripts/load-into-counting.py --ksize $(KSIZE) -x $(HASH_SIZE) -N $(N_HASHES) $@ $<
+	load-into-counting.py --ksize $(KSIZE) -x $(HASH_SIZE) -N $(N_HASHES) $@ $<
 
 reads.ht: $(SEQ_FILE)
-	python $(KHMER)/scripts/load-into-counting.py --ksize $(KSIZE) -x $(HASH_SIZE) -N $(N_HASHES) $@ $<
+	load-into-counting.py --ksize $(KSIZE) -x $(HASH_SIZE) -N $(N_HASHES) $@ $<
 
 diginorm.ht: $(SEQ_FILE)
-	python $(KHMER)/scripts/normalize-by-median.py -C $(DIGINORM_COV) --ksize $(KSIZE) -x $(HASH_SIZE) -N $(N_HASHES) -s $@ $<
+	normalize-by-median.py -C $(DIGINORM_COV) --ksize $(KSIZE) -x $(HASH_SIZE) -N $(N_HASHES) -s $@ $<
 
 preload_corrected.fasta.keepalign: reads.ht $(SEQ_FILE)
 	python $(KHMER)/sandbox/read_aligner.py --trusted-cov $(TRUSTED_CUTOFF) --theta $(BITS_THETA) $< $(SEQ_FILE) > $@ 2> preload_alignment_details.txt
