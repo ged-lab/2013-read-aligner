@@ -1,5 +1,4 @@
-
-
+0) Calculate Num reads corr + Num nt corr
 1) Blast+ "match assembled transcripts to their reference"
 2) TransDecoder "to identify full-length transcripts"
 3a) Find all "contigs whose identity was ≥99% similar to, and covering at least 90% of the reference sequence"

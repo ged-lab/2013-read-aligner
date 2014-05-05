@@ -1,6 +1,7 @@
-KHMER= ../khmer
-DBG_NULL= ../dbg-graph-null/
+KHMER= ../../khmer
+DBG_NULL= ../../dbg-graph-null/
 TRINITY= ~/src/trinity/trinityrnaseq_r20140413p1/Trinity
+
 READ_COV = 100
 
 KSIZE= 30
@@ -11,7 +12,7 @@ TRUSTED_CUTOFF= 5
 BITS_THETA= 1
 DIGINORM_COV= 20
 
-SEQ_FILE = hmp_mock.fastq.gz
+SEQ_FILE = mouse.subsamp.fastq
 
 #all: norm_by_align.fasta.keepalign preload_corrected.fasta.keepalign \
 #	diginorm_corrected.fasta.keepalign ideal_corrected.fasta.keepalign
@@ -21,8 +22,12 @@ all: read_correction_summary.txt preload_correction_summary.txt \
 
 .PHONY: all clean
 
-$(SEQ_FILE): SRR172903.fastq.gz SRR172902.fastq.gz
-	cat $^ > $@
+$(SEQ_FILE): subsamp_1.fastq subsamp_2.fastq
+	interleave-reads.py $< -o $@
+
+genome.fasta.gz:
+	wget ftp://ftp.ensembl.org/pub/release-67/fasta/mus_musculus/dna/Mus_musculus.NCBIM37.67.dna.toplevel.fa.gz
+	ln -s Mus_musculus.NCBIM37.67.dna.toplevel.fa.gz $@
 
 norm_by_align.fasta.keepalign: $(SEQ_FILE)
 	python $(KHMER)/sandbox/normalize-by-align.py --details-out alignment_details.txt --ksize $(KSIZE) -x $(HASH_SIZE) -N $(N_HASHES) -C $(DIGINORM_COV) -t $(TRUSTED_CUTOFF) --bits-theta $(BITS_THETA) -s norm_by_align.ht $< 2>&1 | tee norm_by_align.ht.out && mv $(SEQ_FILE).keepalign $@
@@ -33,7 +38,7 @@ norm_by_align.fasta.keepalign: $(SEQ_FILE)
 read_correction_summary.txt: ${SEQ_FILE} norm_by_align.fasta.keepalign
 	pypy ../correctioncompare.py $^ | tee $@
 
-genome.ht: all.fa
+genome.ht: genome.fasta.gz
 	load-into-counting.py --ksize $(KSIZE) -x $(HASH_SIZE) -N $(N_HASHES) $@ $< 2>&1 | tee $@.out 
 
 reads.ht: $(SEQ_FILE)
@@ -82,14 +87,14 @@ distclean:
 		norm_by_align.fasta.keepalign diginorm_* preload_* ideal_* \
 		reads.fasta.keep)
 
+sim.reads.left.fq.gz:
+	wget -O $@ http://datadryad.org/bitstream/handle/10255/dryad.51511/sim.reads.left.fq.gz?sequence=1
+
+sim.reads.right.fq.gz:
+	wget -O $@ http://datadryad.org/bitstream/handle/10255/dryad.51510/sim.reads.right.fq.gz?sequence=2
 
 norm_by_align.Trinity.fasta: norm_by_align.fasta.keepalign
 	$(TRINITY) --seqType fa --JM 30G --single $< --run_as_paired --output norm_by_align --full_cleanup
 
 preload_corrected.Trinity.fasta: preload_corrected.fasta.keepalign
 	$(TRINITY) --seqType fa --JM 30G --single $< --run_as_paired --output preload_corrected --full_cleanup
-
-# HMP Illumina mock data set http://www.ncbi.nlm.nih.gov/bioproject/48475
-%.fastq.gz:
-	wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR172/SRR172903/SRR172903.fastq.gz
-	wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR172/SRR172902/SRR172902.fastq.gz

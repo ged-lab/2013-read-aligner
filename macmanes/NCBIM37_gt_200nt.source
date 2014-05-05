@@ -1,0 +1,3 @@
+http://may2012.archive.ensembl.org/biomart/martview/3b664d69672a2d2a1cd1e960fa0bb9de?VIRTUALSCHEMANAME=default&ATTRIBUTES=mmusculus_gene_ensembl.default.sequences.ensembl_gene_id|mmusculus_gene_ensembl.default.sequences.ensembl_transcript_id|mmusculus_gene_ensembl.default.sequences.coding&FILTERS=&VISIBLEPANEL=attributepanel
+
+read_fasta -i 215\?file\=martquery_0501002340_295.txt.gz | grab -i -k SEQ -p Sequenceunavailable | grab -e 'SEQ_LEN > 200' | write_fasta -o NCBIM37_gt_200nt.fasta -x
