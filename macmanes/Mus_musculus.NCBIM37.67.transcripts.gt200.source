@@ -1,0 +1,1 @@
+read_fasta -i Mus_musculus.NCBIM37.67.transcripts.fasta | grab -e 'SEQ_LEN > 200' | write_fasta -o Mus_musculus.NCBIM37.67.transcripts.gt200.fasta -x

@@ -11,6 +11,7 @@ TRUSTED_CUTOFF= 5
 BITS_THETA= 1
 DIGINORM_COV= 20
 
+# 4,641,652 reads
 SEQ_FILE = reads.fasta
 
 all: ideal_correction_details.txt read_correction_details.txt preload_correction_details.txt diginorm_correction_details.txt
@@ -57,4 +58,7 @@ ideal_correction_details.txt: ideal_corrected.fasta.keepalign $(SEQ_FILE)
 	../compare.py mutation_details.txt $(SEQ_FILE) ideal_corrected.fasta.keepalign > $@
 
 clean:
+	-(rm genome.ht* reads.ht* diginorm.ht* norm_by_align.ht* read_correction_details.txt alignment_details.txt mutation_details.txt norm_by_align.fasta.keepalign diginorm_* preload_* ideal_* reads.fasta.keep)
+
+distclean:
 	-(rm genome.fasta $(SEQ_FILE) genome.ht* reads.ht* diginorm.ht* norm_by_align.ht* read_correction_details.txt alignment_details.txt mutation_details.txt norm_by_align.fasta.keepalign diginorm_* preload_* ideal_* reads.fasta.keep)
