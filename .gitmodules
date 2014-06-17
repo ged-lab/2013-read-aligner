@@ -4,7 +4,7 @@
 
 [submodule "khmer"]
 	path = khmer
-	url = https://github.com/fishjord/khmer
+	url = https://github.com/ged-lab/khmer
 [submodule "macmanes"]
 	path = macmanes
 	url = git@github.com:macmanes/error_correction.git
