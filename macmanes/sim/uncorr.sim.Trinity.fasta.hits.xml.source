@@ -1,0 +1,1 @@
+blastn -query uncorr.sim.Trinity.fasta -db ../Mus_musculus.NCBIM37.67.transcripts.gt200.fasta -num_threads 6 -out uncorr.sim.Trinity.fasta.hits.xml -outfmt 5 -perc_identity 99
