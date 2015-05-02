@@ -3,6 +3,7 @@
 import pysam
 import khmer
 import argparse
+import collections
 
 cigar_to_state = { 0 : 'M', 1 : 'Ir', 2 : 'Ig' }
 
@@ -78,10 +79,41 @@ def main():
   print "state counts=", state_cnts 
   print "trans counts=", trans_cnts
 
+  trans_probs = collections.defaultdict(float(0))
+
   for trans in sorted(trans_cnts.keys()):
     start_state = trans.split('-')[0]
-    cnt = float(state_cnts[start_state])
-    print '{0}\t{1:0.7f}'.format(trans, trans_cnts[trans] / cnt)
+    trans_probs[trans] = trans_cnts[trans] / float(state_cnts[start_state])
+    print '{0}\t{1:0.7f}'.format(trans, trans_probs[trans])
+
+
+  print 'static double trans_default[] = { log2{0:0.7f}, log2{1:0.7f}, ' \
+        'log2{2:0.7f}, log2{3:0.7f}, log2{4:0.7f}, ' \
+        'log2(5:0.7f},'.format(trans_probs['M_t-M_t'], trans_probs['M_t-Ir_t'],
+                               trans_probs['M_t-Ig_t'], trans_probs['M_t-M_u'],
+                               trans_probs['M_t-Ir_u'],
+                               trans_probs['M_t-Ig_u'])
+  print 'log2{0:0.7f}, log2{1:0.7f}, log2{2:0.7f}, log2{3:0.7f},'.format(
+    trans_probs['Ir_t-M_t'], trans_probs['Ir_t-Ir_t'], trans_probs['Ir_t-M_u'],
+    trans_probs['Ir_t,Ir_u'])
+  print 'log2{0:0.7f}, log2{1:0.7f}, log2{2:0.7f}, log2{3:0.7f},'.format(
+    trans_probs['Ig_t-M_t'], trans_probs['Ig_t-Ig_t'], trans_probs['Ig_t-M_u'],
+    trans_probs['Ig_t,Ig_u'])
+  print 'log2{0:0.7f}, log2{1:0.7f}, log2{2:0.7f}, log2{3:0.7f}, '\
+          'log2{4:0.7f}, log2(5:0.7f},'.format(
+              trans_probs['M_u-M_t'], trans_probs['M_u-Ir_t'],
+              trans_probs['M_u-Ig_t'], trans_probs['M_u-M_u'],
+              trans_probs['M_u-Ir_u'], trans_probs['M_u-Ig_u'])
+  print 'log2{0:0.7f}, log2{1:0.7f}, log2{2:0.7f}, log2{3:0.7f},'.format(
+    trans_probs['Ir_u-M_t'], trans_probs['Ir_u-Ir_t'], trans_probs['Ir_u-M_u'],
+    trans_probs['Ir_u,Ir_u'])
+  print 'log2{0:0.7f}, log2{1:0.7f}, log2{2:0.7f}, log2{3:0.7f},'.format(
+    trans_probs['Ig_u-M_t'], trans_probs['Ig_u-Ig_t'], trans_probs['Ig_u-M_u'],
+    trans_probs['Ig_u,Ig_u'])
+  print '};'
+
+
+
 
 if __name__ == "__main__":
   main()
