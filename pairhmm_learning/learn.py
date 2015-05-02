@@ -3,6 +3,7 @@
 import pysam
 import khmer
 import argparse
+from math import log
 
 cigar_to_state = { 0 : 'M', 1 : 'Ir', 2 : 'Ig' }
 
@@ -20,11 +21,13 @@ def trusted_str(cov, trusted_cutoff):
   else:
     return '_t'
 
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--trusted-cutoff', type=int, default=5)
   parser.add_argument("ht", type=str, help="Counting bloom filter for the reads")
   parser.add_argument("bam_file", type=str, help="bam read mapping file")
+  parser.add_argument("--json", type=bool, help="output JSON")
 
   args = parser.parse_args()
 
@@ -72,16 +75,63 @@ def main():
       state_cnts[state] = state_cnts.get(state, 0) + 1
       base_cnt[kmer[-1]] = base_cnt.get(kmer[-1], 0) + 1
 
-  print "kmer size=", k
-  print "seq count=", seq_cnt, "dropped seqs=", dropped_seqs
-  print "base counts=", base_cnt
-  print "state counts=", state_cnts 
-  print "trans counts=", trans_cnts
+  if not args.json:
+      print "kmer size=", k
+      print "seq count=", seq_cnt, "dropped seqs=", dropped_seqs
+      print "base counts=", base_cnt
+      print "state counts=", state_cnts 
+      print "trans counts=", trans_cnts
 
-  for trans in sorted(trans_cnts.keys()):
-    start_state = trans.split('-')[0]
-    cnt = float(state_cnts[start_state])
-    print '{0}\t{1:0.7f}'.format(trans, trans_cnts[trans] / cnt)
+  if not args.json:
+    for trans in sorted(trans_cnts.keys()):
+        start_state = trans.split('-')[0]
+        cnt = float(state_cnts[start_state])
+        print '{0}\t{1:0.7f}'.format(trans, trans_cnts[trans] / cnt)
+  else:
+      params = {'scoring_matrix':
+                [-0.06642736173897607,
+                 -4.643856189774724,
+                 -7.965784284662087,
+                 -9.965784284662087],
+                'transition_probabilities': ((
+                    log(trans_cnts['M_t-M_t']/float(state_cnts['M_t']), 2),
+                    log(trans_cnts['M_t-Ir_t']/float(state_cnts['M_t']), 2),
+                    log(trans_cnts['M_t-Ig_t']/float(state_cnts['M_t']), 2),
+                    log(trans_cnts['M_t-M_u']/float(state_cnts['M_t']), 2),
+                    log(trans_cnts['M_t-Ir_u']/float(state_cnts['M_t']), 2),
+                    log(trans_cnts['M_t-Ig_u']/float(state_cnts['M_t']), 2),
+                ), (
+                    log(trans_cnts['Ir_t-M_t']/float(state_cnts['Ir_t']), 2),
+                    log(trans_cnts['Ir_t-Ir_t']/float(state_cnts['Ir_t']), 2),
+                    log(trans_cnts['Ir_t-M_u']/float(state_cnts['Ir_t']), 2),
+                    log(trans_cnts['Ir_t-Ir_u']/float(state_cnts['Ir_t']), 2),
+                ), (
+                    log(trans_cnts['Ig_t-M_t']/float(state_cnts['Ig_t']), 2),
+                    log(trans_cnts['Ig_t-Ig_t']/float(state_cnts['Ig_t']), 2),
+                    log(trans_cnts['Ig_t-M_u']/float(state_cnts['Ig_t']), 2),
+                    log(trans_cnts['Ig_t-Ig_u']/float(state_cnts['Ig_t']), 2),
+                ), (
+                    log(trans_cnts['M_u-M_t']/float(state_cnts['M_u']), 2),
+                    log(trans_cnts['M_u-Ir_t']/float(state_cnts['M_u']), 2),
+                    log(trans_cnts['M_u-Ig_t']/float(state_cnts['M_u']), 2),
+                    log(trans_cnts['M_u-M_u']/float(state_cnts['M_u']), 2),
+                    log(trans_cnts['M_u-Ir_u']/float(state_cnts['M_u']), 2),
+                    log(trans_cnts['M_u-Ig_u']/float(state_cnts['M_u']), 2),
+                ), (
+                    log(trans_cnts['Ir_u-M_t']/float(state_cnts['Ir_u']), 2),
+                    log(trans_cnts['Ir_u-Ir_t']/float(state_cnts['Ir_u']), 2),
+                    log(trans_cnts['Ir_u-M_u']/float(state_cnts['Ir_u']), 2),
+                    log(trans_cnts['Ir_u-Ir_u']/float(state_cnts['Ir_u']), 2),
+                ), (
+                    log(trans_cnts['Ig_u-M_t']/float(state_cnts['Ig_u']), 2),
+                    log(trans_cnts['Ig_u-Ig_t']/float(state_cnts['Ig_u']), 2),
+                    log(trans_cnts['Ig_u-M_u']/float(state_cnts['Ig_u']), 2),
+                    log(trans_cnts['Ig_u-Ig_u']/float(state_cnts['Ig_u']), 2),
+                )
+                )
+               }
+      json.dumps(params, sort_keys=True, indent=4, separators=(',', ': '))
+
 
 if __name__ == "__main__":
   main()
