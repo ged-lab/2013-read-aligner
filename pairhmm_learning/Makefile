@@ -4,7 +4,7 @@ KSIZE= 30
 HASH_SIZE= 4e8
 N_HASHES= 4
 
-all: estimated_probabilities.txt
+all: estimated_probabilities.${KSIZE}.json
 
 %.fastq.gz:
 	wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR172/SRR172903/SRR172903.fastq.gz
@@ -16,5 +16,5 @@ combined_reads.ht: SRR172902.fastq.gz SRR172903.fastq.gz
 combined_reads_mapping.bam: SRR172902.fastq.gz SRR172903.fastq.gz
 	bowtie2 -x mockRefG -U SRR172902.fastq.gz -U SRR172903.fastq.gz | samtools view -S -F4 -b - > combined_reads_mapping.bam
 
-estimated_probabilities.txt: combined_reads.ht combined_reads_mapping.bam
-	python learn.py combined_reads.ht combined_reads_mapping.bam > estimated_probabilities.txt
+estimated_probabilities.${KSIZE}.json: combined_reads.ht combined_reads_mapping.bam
+	python learn.py --json combined_reads.ht combined_reads_mapping.bam > estimated_probabilities.${KSIZE}.json
