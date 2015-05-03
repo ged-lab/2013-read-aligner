@@ -1,0 +1,2 @@
+makeblastdb -dbtype nucl -in Mus_musculus.NCBIM37.67.transcripts.gt200.fasta -hash_index -max_file_sz 100GB
+

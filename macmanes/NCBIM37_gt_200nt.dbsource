@@ -1,0 +1,1 @@
+makeblastdb -dbtype nucl -in NCBIM37_gt_200nt.fasta -hash_index -max_file_sz 100GB
